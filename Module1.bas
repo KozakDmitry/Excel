@@ -1,5 +1,5 @@
 Attribute VB_Name = "Module1"
-Function FindAndCopy(searchTerm As Long, columnToSearch As Variant)
+Function FindAndCopy(searchTerm As Variant, columnToSearch As Variant)
     Dim ws As Worksheet
     Dim found As Range
     Dim copyTo As Range
@@ -18,22 +18,22 @@ Function FindAndCopy(searchTerm As Long, columnToSearch As Variant)
                             ws.Cells(j, i).EntireRow.Copy
                             
                             
-                            choose = InputBox("Ввести это в документ или нет?")
-                            If (choose = "нет") Then
+                            ' choose = InputBox("Ввести это в документ или нет?")
+                            ' If (choose = "нет") Then
                             lastRow.PasteSpecial xlPasteValues
                             lastRow.Resize(1, ws.Cells(j, i).EntireRow.Columns.Count).Font.Bold = True
                             ws.Cells(found.Row, i).Offset(0, 1).EntireRow.Copy
                             lastRow.Offset(1).PasteSpecial xlPasteValues
                             lastRow.value = lastRow.value & " " & ws.Name
                             
-                            ElseIf (choose = "да") Then
-                            Dim wdDoc As Object
-                            Set wdDoc = GetObject(, "Word.Application").ActiveDocument
-                            Dim rng As Object
-                            Set rng = wdDoc.Range(Start:=0, End:=0)
+                            'ElseIf (choose = "да") Then
+                            'Dim wdDoc As Object
+                            'Set wdDoc = GetObject(, "Word.Application").ActiveDocument
+                            'Dim rng As Object
+                            'Set rng = wdDoc.Range(Start:=0, End:=0)
                                                         
                             
-                            End If
+                            'End If
                         End If
                         Exit For
                     End If
@@ -47,7 +47,7 @@ Function FindAndCopy(searchTerm As Long, columnToSearch As Variant)
 End Function
 
 Sub SearchAndCopy()
-    Dim searchValue As Long
+    Dim searchValue As Variant
     Dim columnToSearch As Variant
     
 
@@ -58,17 +58,20 @@ Sub SearchAndCopy()
     FindAndCopy searchValue, columnToSearch
 End Sub
 
-Sub FindAndInsertAfter()
-
-    Dim wrdApp As Object ' Переменная для приложения Word
-    Dim wrdDoc As Object ' Переменная для документа Word
-    Dim wrdRange As Object ' Переменная для диапазона в документе Word
-    Dim findText As String ' Текст для поиска
-    Dim insertText As String ' Текст для вставки
-    Dim found As Boolean ' Флаг, указывающий, был ли найден текст
+Function FindAndInsertAfter()
+    
+    Dim InsertAfter As String
+    Dim wrdApp As Object
+    Dim wrdDoc As Object
+    
+    Dim wrdRange As Object
+    
+    Dim findText As String
+    Dim insertText As String
+    Dim found As Boolean
     
     ' Определяем текст для поиска и вставки
-    findText = "найденный текст"
+    findText = ""
     insertText = "вставленный текст"
     
     ' Создаем объект приложения Word
@@ -105,5 +108,5 @@ Sub FindAndInsertAfter()
     Set wrdDoc = Nothing
     Set wrdApp = Nothing
 
-End Sub
+End Function
 
