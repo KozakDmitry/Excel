@@ -54,8 +54,13 @@ Sub SearchAndCopy()
     searchValue = InputBox("Введите значение для поиска:")
     columnToSearch = InputBox("Введите название столбца для поиска:")
     
-
+    If searchValue = "" Or columnToSearch = "" Then
+    MsgBox "Неправильный ввод"
+    Else
     FindAndCopy searchValue, columnToSearch
+    End If
+    
+    
 End Sub
 
 Function FindAndInsertAfter()
