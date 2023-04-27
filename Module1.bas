@@ -51,8 +51,9 @@ Sub SearchAndCopy()
     Dim columnToSearch As Variant
     
 
-    searchValue = InputBox("Введите значение для поиска:")
+ 
     columnToSearch = InputBox("Введите название столбца для поиска:")
+    searchValue = InputBox("Введите значение для поиска:")
     
     If searchValue = "" Or columnToSearch = "" Then
     MsgBox "Неправильный ввод"
