@@ -7,7 +7,7 @@ Function FindAndCopy(searchTerm As Variant, columnToSearch As Variant)
     Dim choose As String
     Set copyTo = Selection
     
-    For Each ws In ThisWorkbook.Worksheets
+    For Each ws In ActiveWorkbook.Worksheets
             For i = 1 To ws.Cells(1, ws.Columns.Count).End(xlToLeft).column
                 For j = 1 To 14
                     If ws.Cells(j, i).value = columnToSearch Then
