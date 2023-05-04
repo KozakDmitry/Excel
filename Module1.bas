@@ -1,5 +1,5 @@
 Attribute VB_Name = "Module1"
-Function FindAndCopy(searchTerm As Variant, columnToSearch As Variant)
+    Function FindAndCopy(searchTerm As Variant, columnToSearch As Variant)
     Dim ws As Worksheet
     Dim found As Range
     Dim copyTo As Range
@@ -64,7 +64,7 @@ Sub SearchAndCopy()
     
 End Sub
 
-Function FindAndInsertAfter()
+Sub FindAndInsertAfter()
     
     Dim InsertAfter As String
     Dim wrdApp As Object
@@ -77,8 +77,8 @@ Function FindAndInsertAfter()
     Dim found As Boolean
     
     ' Определяем текст для поиска и вставки
-    findText = ""
-    insertText = "вставленный текст"
+    findText = "@name"
+    insertText = InputBox("Введите текст для вставки:")
     
     ' Создаем объект приложения Word
     Set wrdApp = CreateObject("Word.Application")
@@ -88,18 +88,17 @@ Function FindAndInsertAfter()
     
     ' Устанавливаем диапазон поиска весь документ
     Set wrdRange = wrdDoc.Content
-    
-    ' Ищем текст
-    With wrdRange.Find
-        .Text = findText
-        .Execute
-        If .found Then
-            ' Нашли текст, вставляем текст после него
-            wrdRange.InsertAfter insertText
-            found = True
-        End If
-    End With
-    
+    For i = 1 To ws.Cells(1, ws.Columns.Count).End(xlToLeft).column
+        With wrdRange.Find
+            .Text = findText
+            .Execute
+            If .found Then
+                ' Нашли текст, вставляем текст после него
+                wrdRange.InsertAfter insertText
+                found = True
+            End If
+        End With
+    Exit For
     ' Если текст не найден, выводим сообщение об ошибке
     If Not found Then
         MsgBox "Текст не найден"
@@ -114,5 +113,6 @@ Function FindAndInsertAfter()
     Set wrdDoc = Nothing
     Set wrdApp = Nothing
 
-End Function
+End Sub
+
 
