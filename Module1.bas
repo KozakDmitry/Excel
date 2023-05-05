@@ -64,12 +64,11 @@ Sub SearchAndCopy()
     
 End Sub
 
-Sub FindAndInsertAfter()
+Function FindAndInsertAfter()
     
     Dim InsertAfter As String
     Dim wrdApp As Object
-    Dim wrdDoc As Object
-    
+    Set wordDoc = ActiveSheet.OLEObjects("Word.Document.8").Object.Object
     Dim wrdRange As Object
     
     Dim findText As String
@@ -83,9 +82,7 @@ Sub FindAndInsertAfter()
     ' Создаем объект приложения Word
     Set wrdApp = CreateObject("Word.Application")
     
-    ' Открываем документ
-    Set wrdDoc = wrdApp.Documents.Open("путь_к_документу")
-    
+
     ' Устанавливаем диапазон поиска весь документ
     Set wrdRange = wrdDoc.Content
     For i = 1 To ws.Cells(1, ws.Columns.Count).End(xlToLeft).column
@@ -94,11 +91,12 @@ Sub FindAndInsertAfter()
             .Execute
             If .found Then
                 ' Нашли текст, вставляем текст после него
-                wrdRange.InsertAfter insertText
+                wrdRange.Replace insertText
                 found = True
             End If
         End With
-    Exit For
+    Next i
+    
     ' Если текст не найден, выводим сообщение об ошибке
     If Not found Then
         MsgBox "Текст не найден"
@@ -113,6 +111,22 @@ Sub FindAndInsertAfter()
     Set wrdDoc = Nothing
     Set wrdApp = Nothing
 
+
+    'Set myRange = ActiveDocument.Content
+    'myRange.Find.Execute findText:="hi", ReplaceWith:="hello", _
+    'Replace:=wdReplaceAll
+End Function
+
+Sub test()
+
+
+    Dim obj As OLEObject
+    For Each obj In ActiveSheet.OLEObjects
+        Debug.Print obj.Name
+    Next obj
+ 'Dim wb As Workbook
+    'Dim obj As Object
+    'Set wb = ActiveWorkbook ' замените ThisWorkbook на нужную вам книгу
+    'Set obj = wb.Sheets("акт о страховом случае").OLEObjects("Word.Document.8").Object ' замените Sheet1 на нужный вам лист и MyWordDoc на имя вашего объекта
+  
 End Sub
-
-
