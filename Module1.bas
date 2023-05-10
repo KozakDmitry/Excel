@@ -68,7 +68,7 @@ Function FindAndInsertAfter()
     
     Dim InsertAfter As String
     Dim wrdApp As Object
-    Set wordDoc = ActiveSheet.OLEObjects("Word.Document.8").Object.Object
+    Set wordDoc = ActiveSheet.OLEObjects("WordDoc").Object
     Dim wrdRange As Object
     
     Dim findText As String
@@ -118,15 +118,28 @@ Function FindAndInsertAfter()
 End Function
 
 Sub test()
-
-
     Dim obj As OLEObject
-    For Each obj In ActiveSheet.OLEObjects
-        Debug.Print obj.Name
-    Next obj
- 'Dim wb As Workbook
-    'Dim obj As Object
-    'Set wb = ActiveWorkbook ' замените ThisWorkbook на нужную вам книгу
-    'Set obj = wb.Sheets("акт о страховом случае").OLEObjects("Word.Document.8").Object ' замените Sheet1 на нужный вам лист и MyWordDoc на имя вашего объекта
+    Dim targetObject As OLEObject
+    Dim wrdRange As Object
+    Dim wdApp As Object
+    
+    For Each ws In ActiveWorkbook.Worksheets
+        For Each obj In ws.OLEObjects
+            If Not obj.Verb = xlVerbChart Then
+                Set targetObject = obj
+                Exit For
+            End If
+        Next obj
+    Next ws
+    targetObject.Name = "WordDoc"
+    Debug.Print (targetObject.Name)
+    
+    Set wdApp = targetObject.Object.Application
+    Set wdDoc = targetObject.Object
+    wdApp.Visible = True
+    wdDoc.Activate
+    
+    wdDoc.Content.Find.Execute findText:="@name", ReplaceWith:="А вот И Я!"
+    wdDoc.Inactivate
   
 End Sub
