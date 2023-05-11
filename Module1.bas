@@ -8,9 +8,9 @@ Attribute VB_Name = "Module1"
     Set copyTo = Selection
     
     For Each ws In ActiveWorkbook.Worksheets
-            For i = 1 To ws.Cells(1, ws.Columns.Count).End(xlToLeft).column
+            For i = 1 To ws.Cells(1, ws.Columns.Count).End(xlToLeft).Column
                 For j = 1 To 14
-                    If ws.Cells(j, i).value = columnToSearch Then
+                    If ws.Cells(j, i).Value = columnToSearch Then
                         Set found = ws.Cells.Columns(i).Find(What:=searchTerm, LookIn:=xlValues, LookAt:=xlWhole)
                         If Not found Is Nothing Then
                             Dim lastRow As Range
@@ -24,7 +24,8 @@ Attribute VB_Name = "Module1"
                             lastRow.Resize(1, ws.Cells(j, i).EntireRow.Columns.Count).Font.Bold = True
                             ws.Cells(found.Row, i).Offset(0, 1).EntireRow.Copy
                             lastRow.Offset(1).PasteSpecial xlPasteValues
-                            lastRow.value = lastRow.value & " " & ws.Name
+                            lastRow.Value = lastRow.Value & " " & ws.Name
+                            FindAndInsertAfter (lastRow)
                             
                             'ElseIf (choose = "да") Then
                             'Dim wdDoc As Object
@@ -41,9 +42,6 @@ Attribute VB_Name = "Module1"
             Next i
             
     Next ws
-    If copyTo.Address = Selection.Address Then
-        
-    End If
 End Function
 
 Sub SearchAndCopy()
@@ -64,64 +62,17 @@ Sub SearchAndCopy()
     
 End Sub
 
-Function FindAndInsertAfter()
+Function FindAndInsertAfter(lastRow As Variant)
     
-    Dim InsertAfter As String
-    Dim wrdApp As Object
-    Set wordDoc = ActiveSheet.OLEObjects("WordDoc").Object
-    Dim wrdRange As Object
-    
-    Dim findText As String
-    Dim insertText As String
-    Dim found As Boolean
-    
-    ' Определяем текст для поиска и вставки
-    findText = "@name"
-    insertText = InputBox("Введите текст для вставки:")
-    
-    ' Создаем объект приложения Word
-    Set wrdApp = CreateObject("Word.Application")
-    
-
-    ' Устанавливаем диапазон поиска весь документ
-    Set wrdRange = wrdDoc.Content
-    For i = 1 To ws.Cells(1, ws.Columns.Count).End(xlToLeft).column
-        With wrdRange.Find
-            .Text = findText
-            .Execute
-            If .found Then
-                ' Нашли текст, вставляем текст после него
-                wrdRange.Replace insertText
-                found = True
-            End If
-        End With
-    Next i
-    
-    ' Если текст не найден, выводим сообщение об ошибке
-    If Not found Then
-        MsgBox "Текст не найден"
-    End If
-    
-    ' Закрываем документ и приложение Word
-    wrdDoc.Close
-    wrdApp.Quit
-    
-    ' Освобождаем память, занятую объектами Word
-    Set wrdRange = Nothing
-    Set wrdDoc = Nothing
-    Set wrdApp = Nothing
-
-
-    'Set myRange = ActiveDocument.Content
-    'myRange.Find.Execute findText:="hi", ReplaceWith:="hello", _
-    'Replace:=wdReplaceAll
-End Function
-
-Sub test()
     Dim obj As OLEObject
     Dim targetObject As OLEObject
     Dim wrdRange As Object
     Dim wdApp As Object
+    Dim searchText As String
+    Dim foundRange As Range
+    Dim cell As Range
+    Dim lastColumn As Long
+    
     
     For Each ws In ActiveWorkbook.Worksheets
         For Each obj In ws.OLEObjects
@@ -136,10 +87,53 @@ Sub test()
     
     Set wdApp = targetObject.Object.Application
     Set wdDoc = targetObject.Object
-    wdApp.Visible = True
-    wdDoc.Activate
+   
     
-    wdDoc.Content.Find.Execute findText:="@name", ReplaceWith:="А вот И Я!"
-    wdDoc.Inactivate
-  
+    ''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+    searchText = "Значения для подстановки"
+    
+    For Each ws In ActiveWorkbook.Worksheets
+        Set foundRange = ws.UsedRange.Find(What:=searchText, LookIn:=xlValues, LookAt:=xlWhole)
+        If Not foundRange Is Nothing Then
+            Exit For
+        End If
+    Next ws
+    Set secondRange = foundRange.Offset(1)
+
+    
+
+    For Each cell1 In lastRow
+
+        For Each cell2 In foundRange
+     
+            If cell1.Value = cell2.Value Then
+                wdApp.Visible = True
+                wdDoc.Activate
+
+                wdDoc.Content.Find.Execute findText:=cell2.Offset(1, 0).Value, ReplaceWith:=cell1.Offset(-1, 0).Value
+                
+                wdDoc.Inactivate
+                
+
+            End If
+        Next cell2
+    Next cell1
+        
+    End If
+End Function
+
+Sub test(lastRow As Variant)
+    
+    
+    Sub FindMatchingCells()
+    Dim targetRow1 As Range
+    Dim targetRow2 As Range
+    Dim cell1 As Range
+    Dim cell2 As Range
+    
+    
+
 End Sub
+
+
