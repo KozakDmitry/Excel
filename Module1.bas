@@ -83,7 +83,7 @@ Function FindAndInsertAfter(lastRow)
     targetObject.Name = "WordDoc"
     
     Set startingCell = lastRow.Cells(1, 1)
-    Debug.Print (startingCell)
+    
     
     Set wdApp = targetObject.Object.Application
     Set wdDoc = targetObject.Object
@@ -103,15 +103,14 @@ Function FindAndInsertAfter(lastRow)
         End If
     Next ws
     Set secondRange = foundRange.Offset(1)
-    
+    Set forceRange = Range(foundRange.Offset(0, 1), foundRange.End(xlToRight))
     For Each cell1 In rowRange
 
-        For Each cell2 In Range(secondRange.Offset(0, 1), secondRange.End(xlToRight))
-        
+        For Each cell2 In forceRange
             If cell1.Value = cell2.Value Then
                 wdApp.Visible = True
                 wdDoc.Activate
-
+                
                 wdDoc.Content.Find.Execute findText:=cell2.Offset(1, 0).Value, ReplaceWith:=cell1.Offset(-1, 0).Value
                 
                 wdDoc.Inactivate
