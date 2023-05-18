@@ -25,8 +25,8 @@ Attribute VB_Name = "Module1"
                             ws.Cells(j, i).EntireRow.Copy
                             
                             
-                            ' choose = InputBox("Ввести это в документ или нет?")
-                            ' If (choose = "нет") Then
+
+                            
                             lastRow.PasteSpecial xlPasteValues
                             lastRow.Resize(1, ws.Cells(j, i).EntireRow.Columns.Count).Font.Bold = True
                             ws.Cells(found.Row, i).Offset(0, 1).EntireRow.Copy
@@ -42,7 +42,11 @@ Attribute VB_Name = "Module1"
             Next i
             
     Next ws
-    FindAndInsertAfter lastRow
+    choose = MsgBox("Вопрос: Ввести это в документ?", vbYesNo)
+    If choose = vbYes Then
+        FindAndInsertAfter lastRow
+    End If
+    
 End Function
 
 Sub SearchAndCopy()
