@@ -80,6 +80,9 @@ Function FindAndInsertAfter(lastRow)
     Dim lastColumn As Long
     Dim startingCell As Range
     Dim rowRange As Range
+    Dim findTex As String
+    Dim Index As Integer
+    Dim textNum As String
     
     For Each ws In ActiveWorkbook.Worksheets
         For Each obj In ws.OLEObjects
@@ -114,20 +117,26 @@ Function FindAndInsertAfter(lastRow)
     Next ws
     Set secondRange = foundRange.Offset(1)
     Set forceRange = Range(foundRange.Offset(0, 1), foundRange.End(xlToRight))
+    Index = 0
     For Each cell1 In rowRange
-
         For Each cell2 In forceRange
             If cell2.Value = "Имя листа" Then
                 wdApp.Visible = True
                 wdDoc.Activate
-                wdDoc.Content.Find.Execute findText:=cell2.Offset(1, 0).Value, ReplaceWith:=rowRange.Cells(0).Value
+                wdDoc.Content.Find.Execute findText:=cell2.Offset(1, 0).Value, ReplaceWith:=rowRange.Cells(0).Value, Replace:=2, Wrap:=1
             End If
             If cell1.Value = cell2.Value Then
                 wdApp.Visible = True
                 wdDoc.Activate
-                
-                wdDoc.Content.Find.Execute findText:=cell2.Offset(1, 0).Value, ReplaceWith:=cell1.Offset(-1, 0).Value
-                
+                If IsNumeric(cell1.Offset(-1, 0).Value) Then
+                    'Index = Index + 1
+                    'If Index > 2 Then
+                     '   textNum = NumberToText(cell1.Offset(-1, 0).Value)
+                      '  wdDoc.Content.Find.Execute findText:=cell2.Offset(1, 0).Value, ReplaceWith:=cell1.Offset(-1, 0).Value & " (" & textNum & ")", Replace:=2, Wrap:=1
+                    'End If
+                Else
+                    wdDoc.Content.Find.Execute findText:=cell2.Offset(1, 0).Value, ReplaceWith:=cell1.Offset(-1, 0).Value, Replace:=2, Wrap:=1
+                End If
                 'Excel.Application.Activate
                 
 
@@ -140,3 +149,55 @@ Function FindAndInsertAfter(lastRow)
 End Function
 
 
+Function NumberToText(ByVal number As Double) As String
+    Dim integerPart As Long
+    Dim decimalPart As Long
+    Dim text As String
+    Dim units() As Variant
+    Dim tens() As Variant
+
+    units = Array("один", "два", "три", "четыре", "пять", "шесть", "семь", "восемь", "девять")
+    tens = Array("десять", "двадцать", "тридцать", "сорок", "пятьдесят", "шестьдесят", "семьдесят", "восемьдесят", "девяносто")
+
+    integerPart = Int(number)
+    decimalPart = Round((number - integerPart) * 100)
+
+    If integerPart < 10 Then
+        text = units(integerPart - 1)
+    ElseIf integerPart < 20 Then
+        text = units(integerPart - 1) & "надцать"
+    ElseIf integerPart < 100 Then
+        text = tens(Int(integerPart / 10) - 1)
+        If integerPart Mod 10 > 0 Then
+            text = text & " " & units(integerPart Mod 10 - 1)
+        End If
+    ElseIf integerPart < 1000 Then
+        text = units(Int(integerPart / 100) - 1) & "сто"
+        If integerPart Mod 100 >= 20 Then
+            text = text & " " & tens(Int((integerPart Mod 100) / 10) - 1)
+            If integerPart Mod 10 > 0 Then
+                text = text & " " & units(integerPart Mod 10 - 1)
+            End If
+        ElseIf integerPart Mod 100 > 0 Then
+            text = text & " " & units(integerPart Mod 100 - 1)
+        End If
+    ElseIf integerPart < 10000 Then
+        text = units(Int(integerPart / 1000) - 1) & " тысяч"
+        If integerPart Mod 1000 > 0 Then
+            text = text & " " & NumberToText(integerPart Mod 1000)
+        End If
+    ElseIf integerPart < 1000000 Then
+        text = NumberToText(Int(integerPart / 1000)) & " тысяч"
+        If integerPart Mod 1000 > 0 Then
+            text = text & " " & NumberToText(integerPart Mod 1000)
+        End If
+    Else
+        text = "Неверное значение"
+    End If
+
+    If decimalPart > 0 Then
+        text = text & " целых " & NumberToText(decimalPart) & " сотых"
+    End If
+
+    NumberToText = text
+End Function
