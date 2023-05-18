@@ -1,4 +1,7 @@
 Attribute VB_Name = "Module1"
+    Public originalDoc As Object
+    
+    
     Function FindAndCopy(searchTerm As Variant, columnToSearch As Variant)
     Dim ws As Worksheet
     Dim found As Range
@@ -29,7 +32,8 @@ Attribute VB_Name = "Module1"
                             ws.Cells(found.Row, i).Offset(0, 1).EntireRow.Copy
                             lastRow.Offset(1).PasteSpecial xlPasteValues
                             lastRow.Value = ws.Name
-                            FindAndInsertAfter lastRow
+                            
+                            
 
                         End If
                         Exit For
@@ -38,6 +42,7 @@ Attribute VB_Name = "Module1"
             Next i
             
     Next ws
+    FindAndInsertAfter lastRow
 End Function
 
 Sub SearchAndCopy()
@@ -64,6 +69,7 @@ Function FindAndInsertAfter(lastRow)
     Dim targetObject As OLEObject
     Dim wrdRange As Object
     Dim wdApp As Object
+    Dim wdDuplicate As OLEObject
     Dim searchText As String
     Dim foundRange As Range
     Dim cell As Range
@@ -84,10 +90,10 @@ Function FindAndInsertAfter(lastRow)
     
     Set startingCell = lastRow.Cells(1, 1)
     
-    
+    Set wdDuplicate = targetObject.Duplicate
     Set wdApp = targetObject.Object.Application
-    Set wdDoc = targetObject.Object
-   
+    Set wdDoc = wdDuplicate.Object
+    
     
     ''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
@@ -107,20 +113,26 @@ Function FindAndInsertAfter(lastRow)
     For Each cell1 In rowRange
 
         For Each cell2 In forceRange
+            If cell2.Value = "Имя листа" Then
+                wdApp.Visible = True
+                wdDoc.Activate
+                wdDoc.Content.Find.Execute findText:=cell2.Offset(1, 0).Value, ReplaceWith:=rowRange.Cells(0).Value
+            End If
             If cell1.Value = cell2.Value Then
                 wdApp.Visible = True
                 wdDoc.Activate
                 
                 wdDoc.Content.Find.Execute findText:=cell2.Offset(1, 0).Value, ReplaceWith:=cell1.Offset(-1, 0).Value
                 
-                wdDoc.Inactivate
+                'Excel.Application.Activate
                 
 
             End If
         Next cell2
     Next cell1
+        'wdApp.Quit
+        
         
 End Function
-
 
 
