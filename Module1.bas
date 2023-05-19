@@ -1,10 +1,173 @@
 Attribute VB_Name = "Module1"
-Public ЦелаяЧасть, Текст, коп, цнт As String
-Public единМ, единЖ, десят1, десятки, сотни, тысячи, _
-миллионы, миллиарды, рубли, копейки, доллары, центы, _
-евры, №склона, Шаг As Variant
-Public группаЕСТЬ As Boolean
-Public Рр(1 To 14), точкаРазд As Integer
+    Public originalDoc As Object
+    Public ЦелаяЧасть, Текст, коп, цнт As String
+    Public единМ, единЖ, десят1, десятки, сотни, тысячи, _
+    миллионы, миллиарды, рубли, копейки, доллары, центы, _
+    евры, №склона, Шаг As Variant
+    Public группаЕСТЬ As Boolean
+    Public Рр(1 To 14), точкаРазд As Integer
+    
+    
+    Function FindAndCopy(searchTerm As Variant, columnToSearch As Variant)
+    Dim ws As Worksheet
+    Dim found As Range
+    Dim copyTo As Range
+    Dim I As Long
+    Dim choose As String
+    Dim lastRow As Range
+    
+
+    Set copyTo = Selection
+    
+    For Each ws In ActiveWorkbook.Worksheets
+            For I = 1 To ws.Cells(1, ws.Columns.Count).End(xlToLeft).Column
+                For j = 1 To 14
+                    If ws.Cells(j, I).Value = columnToSearch Then
+                        Set found = ws.Cells.Columns(I).Find(What:=searchTerm, LookIn:=xlValues, LookAt:=xlWhole)
+                        If Not found Is Nothing Then
+                           
+                            Set lastRow = ActiveSheet.Range("A" & ActiveSheet.Rows.Count).End(xlUp).Offset(1)
+                           
+                            ws.Cells(j, I).EntireRow.Copy
+                            
+                            
+
+                            
+                            lastRow.PasteSpecial xlPasteValues
+                            lastRow.Resize(1, ws.Cells(j, I).EntireRow.Columns.Count).Font.Bold = True
+                            ws.Cells(found.Row, I).Offset(0, 1).EntireRow.Copy
+                            lastRow.Offset(1).PasteSpecial xlPasteValues
+                            lastRow.Value = ws.Name
+                            
+                            
+
+                        End If
+                        Exit For
+                    End If
+                Next j
+            Next I
+            
+    Next ws
+    choose = MsgBox("Вопрос: Ввести это в документ?", vbYesNo)
+    If choose = vbYes Then
+        FindAndInsertAfter lastRow
+    End If
+    
+End Function
+
+Sub SearchAndCopy()
+    Dim searchValue As Variant
+    Dim columnToSearch As Variant
+    
+
+ 
+    columnToSearch = InputBox("Введите название столбца для поиска:")
+    searchValue = InputBox("Введите значение для поиска:")
+ 
+    If searchValue = "" Or columnToSearch = "" Then
+    MsgBox "Неправильный ввод"
+    Else
+    FindAndCopy searchValue, columnToSearch
+    End If
+    
+    
+End Sub
+
+Function FindAndInsertAfter(lastRow)
+    
+    Dim obj As OLEObject
+    Dim targetObject As OLEObject
+    Dim wrdRange As Object
+    Dim wdApp As Object
+    Dim wdDuplicate As OLEObject
+    Dim searchText As String
+    Dim foundRange As Range
+    Dim cell As Range
+    Dim lastColumn As Long
+    Dim startingCell As Range
+    Dim rowRange As Range
+    Dim findTex As String
+    Dim Index As Integer
+    Dim textNum As String
+    
+    For Each ws In ActiveWorkbook.Worksheets
+        For Each obj In ws.OLEObjects
+            If Not obj.Verb = xlVerbChart Then
+                Set targetObject = obj
+                Exit For
+                Exit For
+            End If
+        Next obj
+    Next ws
+    targetObject.Name = "WordDoc"
+    
+    Set startingCell = lastRow.Cells(1, 1)
+    
+    Set wdDuplicate = targetObject.Duplicate
+    Set wdApp = targetObject.Object.Application
+    Set wdDoc = wdDuplicate.Object
+    
+    
+    ''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+    searchText = "Значения для подстановки"
+    
+    
+    Set rowRange = Range(startingCell.Offset(0, 1), startingCell.End(xlToRight))
+    
+    For Each ws In ActiveWorkbook.Worksheets
+        Set foundRange = ws.UsedRange.Find(What:=searchText, LookIn:=xlValues, LookAt:=xlWhole)
+        If Not foundRange Is Nothing Then
+            Exit For
+        End If
+    Next ws
+    Set secondRange = foundRange.Offset(1)
+    Set forceRange = Range(foundRange.Offset(0, 1), foundRange.End(xlToRight))
+    Index = 0
+    For Each cell1 In rowRange
+        For Each cell2 In forceRange
+            If cell2.Value = "Имя листа" Then
+                wdApp.Visible = True
+                wdDoc.Activate
+                wdDoc.Content.Find.Execute findText:=cell2.Offset(1, 0).Value, ReplaceWith:=rowRange.Cells(0).Value, Replace:=2, Wrap:=1
+            End If
+            If cell1.Value = cell2.Value Then
+                wdApp.Visible = True
+                wdDoc.Activate
+                If IsNumeric(cell1.Offset(-1, 0).Value) Then
+                    'Index = Index + 1
+                    'If Index > 2 Then
+                     '   textNum = NumberToText(cell1.Offset(-1, 0).Value)
+                      '  wdDoc.Content.Find.Execute findText:=cell2.Offset(1, 0).Value, ReplaceWith:=cell1.Offset(-1, 0).Value & " (" & textNum & ")", Replace:=2, Wrap:=1
+                    'End If
+                Else
+                    wdDoc.Content.Find.Execute findText:=cell2.Offset(1, 0).Value, ReplaceWith:=cell1.Offset(-1, 0).Value, Replace:=2, Wrap:=1
+                End If
+                'Excel.Application.Activate
+                
+
+            End If
+        Next cell2
+    Next cell1
+        'wdApp.Quit
+        
+        
+End Function
+Sub test()
+    
+    Dim columnToSearch As Double
+    Dim x As Variant
+    
+
+ 
+    columnToSearch = InputBox("Число:")
+    Debug.Print (columnToSearch)
+    x = БелРуб(columnToSearch, True)
+    Debug.Print (x)
+
+End Sub
+
+
 
 Function БелРуб(Сумма, Optional сКопейками As Boolean)
 ' Сумма белорусских рублей прописью _
@@ -41,12 +204,12 @@ End If
 
 ' Присвоение переменным Рр(1)...Рр(14) значений соответствующих разрядов
 ' преобразуемой суммы:
-For i = 1 To 12                     ' для рублей
-  Рр(i) = Val(Mid(ЦелаяЧасть, i, 1))
-Next i
-For i = 13 To 14                    ' для копеек
-  Рр(i) = Val(Mid(коп, i - 12, 1))
-Next i
+For I = 1 To 12                     ' для рублей
+  Рр(I) = Val(Mid(ЦелаяЧасть, I, 1))
+Next I
+For I = 13 To 14                    ' для копеек
+  Рр(I) = Val(Mid(коп, I - 12, 1))
+Next I
 
 ' Формирование преобразуемой текстовой строки по триадам разрядов от старших к младшим
 
@@ -78,298 +241,8 @@ End If
     БелРуб = Текст
 End Function
 
-Function РосРуб(Сумма, Optional сКопейками As Boolean)
-' Сумма российских рублей прописью _
-  в диапазоне от 0 до 999 млрд. с копейками
-' создана 21.02.02 (Николай Домарёнок)
-' если параметр сКопейками = ЛОЖЬ, _
-  то текст "00 копеек" не добавляется к результату.
 
-СтройМат    ' Объявление массива исходных текстовых значений
-рубли = Array("российский рубль", "российских рубля", "российских рублей")
-копейки = Array("копейка", "копейки", "копеек")
-
-Текст = ""  ' Очистка строки преобразуемого текста
-
-' Определение положения точки разделения целой и дробной частей
-
-точкаРазд = InStr(1, Сумма, ".", 1) + InStr(1, Сумма, ",", 1) + InStr(1, Сумма, "=", 1)
-If точкаРазд = 0 Then
-    коп = "00"
-    точкаРазд = Len(Сумма) + 1
-Else
-    коп = Left(Mid(Сумма, точкаРазд + 1, 2) & "00", 2)
-End If
-
-' Проверка переполнения диапазона преобразования числа в текст
-
-ЦелаяЧасть = Right("0000000000000" & Mid(Сумма, 1, точкаРазд - 1), 13)
-If Val(ЦелаяЧасть) < 0 Or Val(ЦелаяЧасть) > 999999999999# Then
-    РосРуб = "Cумма выходит за границы допустимого диапазона (0-999999999999.99)."
-    Exit Function
-End If
-
-' Формирование целой части 12-разрядной суммы с лидирующими нулями
-
-ЦелаяЧасть = Right("000000000000" & Mid(Сумма, 1, точкаРазд - 1), 12)
-
-' Присвоение 14 разрядным переменным значений соответствующих разрядов
-
-For i = 1 To 12 ' рубли
-  Рр(i) = Val(Mid(ЦелаяЧасть, i, 1))
-Next i
-For i = 13 To 14 ' копейки
-  Рр(i) = Val(Mid(коп, i - 12, 1))
-Next i
-
-' Формирование преобразуемой текстовой строки по триадам разрядов от старших к младшим
-
-СтаршиеРазряды
-Группа Шаг:=9
-If группаЕСТЬ = True Then
-    Склонять Шаг:=9
-    Текст = Текст & рубли(№склона) & " "
-Else
-    №склона = 2
-    Текст = Текст & рубли(№склона) & " "
-End If
-
-' Выделение прописной буквой начала преобразуемой строки
-
-Текст = UCase(Mid(Trim(Текст), 1, 1)) & Mid(Trim(Текст), 2)
-
-' Проверка условия об указании копеек в текстовой строке
-
-If Not сКопейками Or коп = "00" Then
-    Текст = Текст & " "
-Else
-    Склонять Шаг:=11
-    Текст = Текст & " " & коп & " " & копейки(№склона)
-End If
-
-' Окончательная запись текстовой строки преобразуемой суммы
-
-    РосРуб = Текст
-End Function
-
-Function Руб(Сумма, Optional сКопейками As Boolean)
-' Сумма рублей прописью _
-  в диапазоне от 0 до 999 млрд. с копейками
-' если параметр сКопейками = ЛОЖЬ, _
-  то текст "00 копеек" не добавляется к результату.
-
-СтройМат    ' Объявление массива исходных текстовых значений
-рубли = Array("рубль", "рубля", "рублей")
-копейки = Array("копейка", "копейки", "копеек")
-
-Текст = ""  ' Очистка строки преобразуемого текста
-
-' Определение положения точки разделения целой и дробной частей
-
-точкаРазд = InStr(1, Сумма, ".", 1) + InStr(1, Сумма, ",", 1) + InStr(1, Сумма, "=", 1)
-If точкаРазд = 0 Then
-    коп = "00"
-    точкаРазд = Len(Сумма) + 1
-Else
-    коп = Left(Mid(Сумма, точкаРазд + 1, 2) & "00", 2)
-End If
-
-' Проверка переполнения диапазона преобразования числа в текст
-
-ЦелаяЧасть = Right("0000000000000" & Mid(Сумма, 1, точкаРазд - 1), 13)
-If Val(ЦелаяЧасть) < 0 Or Val(ЦелаяЧасть) > 999999999999# Then ' проверка условий
-    Руб = "Cумма выходит за границы допустимого диапазона (0-999999999999.99)."
-    Exit Function
-End If
-
-' Формирование целой части 12-разрядной суммы с лидирующими нулями
-
-ЦелаяЧасть = Right("000000000000" & Mid(Сумма, 1, точкаРазд - 1), 12)
-
-' Присвоение 14 разрядным переменным значений соответствующих разрядов
-
-For i = 1 To 12 ' рубли
-  Рр(i) = Val(Mid(ЦелаяЧасть, i, 1))
-Next i
-For i = 13 To 14 ' копейки
-  Рр(i) = Val(Mid(коп, i - 12, 1))
-Next i
-
-' Формирование преобразуемой текстовой строки по триадам разрядов от старших к младшим
-
-СтаршиеРазряды
-Группа Шаг:=9
-If группаЕСТЬ = True Then
-    Склонять Шаг:=9
-    Текст = Текст & рубли(№склона) & " "
-Else
-    №склона = 2
-    Текст = Текст & рубли(№склона) & " "
-End If
-
-' Выделение прописной буквой начала преобразуемой строки
-
-Текст = UCase(Mid(Trim(Текст), 1, 1)) & Mid(Trim(Текст), 2) ' первая прописная
-
-' Проверка условия об указании копеек в текстовой строке
-
-If Not сКопейками Or коп = "00" Then
-    Текст = Текст & " "
-Else
-    Склонять Шаг:=11
-    Текст = Текст & " " & коп & " " & копейки(№склона)
-End If
-
-' Окончательная запись текстовой строки преобразуемой суммы
-
-    Руб = Текст
-End Function
-
-Function Долл(Сумма, Optional сЦентами As Boolean)
-' Сумма долларов США прописью _
-  в диапазоне от 0 до 999 млрд. с центами
-' создана 21.02.02 (Николай Домарёнок)
-' если параметр сЦентами = ЛОЖЬ, _
-  то текст "00 центов" не добавляется к результату.
-
-СтройМат    ' Объявление массива исходных текстовых значений
-доллары = Array("доллар США", "доллара США", "долларов США")
-центы = Array("цент", "цента", "центов")
-
-Текст = ""  ' Очистка строки преобразуемого текста
-
-' Определение положения точки разделения целой и дробной частей:
-
-точкаРазд = InStr(1, Сумма, ".", 1) + InStr(1, Сумма, ",", 1) + InStr(1, Сумма, "=", 1)
-If точкаРазд = 0 Then
-    цнт = "00"
-    точкаРазд = Len(Сумма) + 1
-Else
-    цнт = Left(Mid(Сумма, точкаРазд + 1, 2) & "00", 2)
-End If
-
-' Формирование целой части 12-разрядной суммы с лидирующими нулями
-' и проверка переполнения диапазона преобразования числа в текст:
-
-ЦелаяЧасть = Right("0000000000000" & Mid(Сумма, 1, точкаРазд - 1), 13)
-If Val(ЦелаяЧасть) > 999999999999# Then
-    Долл = "Cумма выходит за границы допустимого диапазона (0-999999999999.99)."
-    Exit Function
-End If
-ЦелаяЧасть = Right("000000000000" & Mid(Сумма, 1, точкаРазд - 1), 12)
-
-' Присвоение переменным Рр(1)...Рр(14) значений соответствующих разрядов
-' преобразуемой суммы:
-For i = 1 To 12                     ' для рублей
-  Рр(i) = Val(Mid(ЦелаяЧасть, i, 1))
-Next i
-For i = 13 To 14                    ' для центов
-  Рр(i) = Val(Mid(цнт, i - 12, 1))
-Next i
-
-' Формирование преобразуемой текстовой строки по триадам разрядов от старших к младшим
-
-СтаршиеРазряды
-Группа Шаг:=9
-If группаЕСТЬ = True Then
-    Склонять Шаг:=9
-    Текст = Текст & доллары(№склона) & " "
-Else
-    №склона = 2
-    Текст = Текст & доллары(№склона) & " "
-End If
-
-' Выделение прописной буквой начала преобразуемой строки
-
-Текст = UCase(Mid(Trim(Текст), 1, 1)) & Mid(Trim(Текст), 2)
-
-' Проверка условия об указании копеек в текстовой строке
-
-If Not сЦентами Or цнт = "00" Then
-    Текст = Текст & " "
-Else
-    Склонять Шаг:=11
-    Текст = Текст & " " & цнт & " " & центы(№склона)
-End If
-
-' Окончательная запись текстовой строки преобразуемой суммы
-
-    Долл = Текст
-End Function
-
-Function Евро(Сумма, Optional сЦентами As Boolean)
-' Сумма евро прописью _
-  в диапазоне от 0 до 999 млрд. с центами
-' создана 21.02.02 (Николай Домарёнок)
-' если параметр сЦентами = ЛОЖЬ, _
-  то текст "00 центов" не добавляется к результату.
-
-СтройМат    ' Объявление массива исходных текстовых значений
-евры = Array("евро", "евро", "евро")
-центы = Array("цент", "цента", "центов")
-
-Текст = ""  ' Очистка строки преобразуемого текста
-
-' Определение положения точки разделения целой и дробной частей:
-
-точкаРазд = InStr(1, Сумма, ".", 1) + InStr(1, Сумма, ",", 1) + InStr(1, Сумма, "=", 1)
-If точкаРазд = 0 Then
-    цнт = "00"
-    точкаРазд = Len(Сумма) + 1
-Else
-    цнт = Left(Mid(Сумма, точкаРазд + 1, 2) & "00", 2)
-End If
-
-' Формирование целой части 12-разрядной суммы с лидирующими нулями
-' и проверка переполнения диапазона преобразования числа в текст:
-
-ЦелаяЧасть = Right("0000000000000" & Mid(Сумма, 1, точкаРазд - 1), 13)
-If Val(ЦелаяЧасть) > 999999999999# Then
-    Евро = "Cумма выходит за границы допустимого диапазона (0-999999999999.99)."
-    Exit Function
-End If
-ЦелаяЧасть = Right("000000000000" & Mid(Сумма, 1, точкаРазд - 1), 12)
-
-' Присвоение переменным Рр(1)...Рр(14) значений соответствующих разрядов
-' преобразуемой суммы:
-For i = 1 To 12                     ' для рублей
-  Рр(i) = Val(Mid(ЦелаяЧасть, i, 1))
-Next i
-For i = 13 To 14                    ' для центов
-  Рр(i) = Val(Mid(цнт, i - 12, 1))
-Next i
-
-' Формирование преобразуемой текстовой строки по триадам разрядов от старших к младшим
-
-СтаршиеРазряды
-Группа Шаг:=9
-If группаЕСТЬ = True Then
-    Склонять Шаг:=9
-    Текст = Текст & евры(№склона) & " "
-Else
-    №склона = 2
-    Текст = Текст & евры(№склона) & " "
-End If
-
-' Выделение прописной буквой начала преобразуемой строки
-
-Текст = UCase(Mid(Trim(Текст), 1, 1)) & Mid(Trim(Текст), 2)
-
-' Проверка условия об указании копеек в текстовой строке
-
-If Not сЦентами Or цнт = "00" Then
-    Текст = Текст & " "
-Else
-    Склонять Шаг:=11
-    Текст = Текст & " " & цнт & " " & центы(№склона)
-End If
-
-' Окончательная запись текстовой строки преобразуемой суммы
-
-    Евро = Текст
-End Function
-
-Sub СтройМат()
+Function СтройМат()
 ' Процедура группировки исходных элементов формируемой текстовой строки
 '
 единМ = Array("", "один ", "два ", "тpи ", "четыpе ", "пять ", "шесть ", "семь ", "восемь ", "девять ")
@@ -380,9 +253,9 @@ Sub СтройМат()
 тысячи = Array("тысяча", "тысячи", "тысяч")
 миллионы = Array("миллион", "миллиона", "миллионов")
 миллиарды = Array("миллиард", "миллиарда", "миллиардов")
-End Sub
+End Function
 
-Sub СтаршиеРазряды()
+Function СтаршиеРазряды()
 ' Формирование текста старших 9 разрядов суммы
 
 Группа Шаг:=0
@@ -400,9 +273,9 @@ If группаЕСТЬ = True Then
     Склонять Шаг:=6
     Текст = Текст & тысячи(№склона) + " "
 End If
-End Sub
+End Function
 
-Sub Группа(Шаг)
+Function Группа(Шаг)
 ' Процедура преобразования в текст группы (триады) чисел
 
 If Val(Mid(ЦелаяЧасть, 1 + Шаг, 3)) <> 0 Then
@@ -419,9 +292,9 @@ If Val(Mid(ЦелаяЧасть, 1 + Шаг, 3)) <> 0 Then
 Else
     группаЕСТЬ = False
 End If
-End Sub
+End Function
     
-Sub Склонять(Шаг)
+Function Склонять(Шаг)
 'Процедура склонения по падежам в единственном и множественном числе
 'единиц измерения по группам (триадам)
 
@@ -437,5 +310,5 @@ Else
             №склона = 2         ' (0,5..9) миллиардов, миллионов, тысяч, рублей
     End Select
 End If
-End Sub
+End Function
 
