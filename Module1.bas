@@ -5,6 +5,7 @@ Attribute VB_Name = "Module1"
     миллионы, миллиарды, рубли, копейки, доллары, центы, _
     евры, №склона, Шаг As Variant
     Public группаЕСТЬ As Boolean
+    Public localSelect As Range
     Public Рр(1 To 14), точкаРазд As Integer
     
     
@@ -17,7 +18,7 @@ Attribute VB_Name = "Module1"
     Dim lastRow As Range
     
 
-    Set copyTo = Selection
+    Set copyTo = selection
     
     For Each ws In ActiveWorkbook.Worksheets
             For I = 1 To ws.Cells(1, ws.Columns.Count).End(xlToLeft).Column
@@ -27,7 +28,7 @@ Attribute VB_Name = "Module1"
                         If Not found Is Nothing Then
                            
                             Set lastRow = ActiveSheet.Range("A" & ActiveSheet.Rows.Count).End(xlUp).Offset(1)
-                           
+                            
                             ws.Cells(j, I).EntireRow.Copy
                             
                             
@@ -48,14 +49,17 @@ Attribute VB_Name = "Module1"
             Next I
             
     Next ws
+    Set localSelect = lastRow
+    Debug.Print (localSelect.Address)
+    
     choose = MsgBox("Вопрос: Ввести это в документ?", vbYesNo)
     If choose = vbYes Then
-        FindAndInsertAfter lastRow
+        ВставитьПоследнюю lastRow
     End If
     
 End Function
 
-Sub SearchAndCopy()
+Sub НайтиВставить()
     Dim searchValue As Variant
     Dim columnToSearch As Variant
     
@@ -73,7 +77,7 @@ Sub SearchAndCopy()
     
 End Sub
 
-Function FindAndInsertAfter(lastRow)
+Function ВставитьПоследнюю(functionSelect)
     
     Dim obj As OLEObject
     Dim targetObject As OLEObject
@@ -90,6 +94,12 @@ Function FindAndInsertAfter(lastRow)
     Dim Index As Integer
     Dim textNum As String
     
+
+    
+    If functionSelect Is Nothing Then
+        MsgBox ("Нечего вставлять")
+        Exit Function
+    End If
     For Each ws In ActiveWorkbook.Worksheets
         For Each obj In ws.OLEObjects
             If Not obj.Verb = xlVerbChart Then
@@ -101,7 +111,7 @@ Function FindAndInsertAfter(lastRow)
     Next ws
     targetObject.Name = "WordDoc"
     
-    Set startingCell = lastRow.Cells(1, 1)
+    Set startingCell = localSelect.Cells(1, 1)
     
     Set wdDuplicate = targetObject.Duplicate
     Set wdApp = targetObject.Object.Application
@@ -130,22 +140,26 @@ Function FindAndInsertAfter(lastRow)
                 wdApp.Visible = True
                 wdDoc.Activate
                 wdDoc.Content.Find.Execute findText:=cell2.Offset(1, 0).Value, ReplaceWith:=rowRange.Cells(0).Value, Replace:=2, Wrap:=1
+          
             End If
             If cell1.Value = cell2.Value Then
                 wdApp.Visible = True
                 wdDoc.Activate
+
+                
+                
                 If IsNumeric(cell1.Offset(-1, 0).Value) Then
-                    'Index = Index + 1
-                    'If Index > 2 Then
-                     '   textNum = NumberToText(cell1.Offset(-1, 0).Value)
-                      '  wdDoc.Content.Find.Execute findText:=cell2.Offset(1, 0).Value, ReplaceWith:=cell1.Offset(-1, 0).Value & " (" & textNum & ")", Replace:=2, Wrap:=1
-                    'End If
+                    If LCase(cell2.Offset(2, 0).Value) = "да" Then
+                    textNum = БелРуб(cell1.Offset(-1, 0).Value, True)
+                    wdDoc.Content.Find.Execute findText:=cell2.Offset(1, 0).Value, ReplaceWith:=cell1.Offset(-1, 0).Value & " BYN (" & textNum & ")", Replace:=2, Wrap:=1
+                    Else
+                    wdDoc.Content.Find.Execute findText:=cell2.Offset(1, 0).Value, ReplaceWith:=cell1.Offset(-1, 0).Value, Replace:=2, Wrap:=1
+                    End If
                 Else
                     wdDoc.Content.Find.Execute findText:=cell2.Offset(1, 0).Value, ReplaceWith:=cell1.Offset(-1, 0).Value, Replace:=2, Wrap:=1
                 End If
                 'Excel.Application.Activate
-                
-
+ 
             End If
         Next cell2
     Next cell1
@@ -153,19 +167,7 @@ Function FindAndInsertAfter(lastRow)
         
         
 End Function
-Sub test()
-    
-    Dim columnToSearch As Double
-    Dim x As Variant
-    
 
- 
-    columnToSearch = InputBox("Число:")
-    Debug.Print (columnToSearch)
-    x = БелРуб(columnToSearch, True)
-    Debug.Print (x)
-
-End Sub
 
 
 
