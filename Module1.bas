@@ -13,7 +13,7 @@ Attribute VB_Name = "Module1"
     Dim ws As Worksheet
     Dim found As Range
     Dim copyTo As Range
-    Dim I As Long
+    Dim i As Long
     Dim choose As String
     Dim lastRow As Range
     
@@ -21,23 +21,23 @@ Attribute VB_Name = "Module1"
     Set copyTo = selection
     
     For Each ws In ActiveWorkbook.Worksheets
-            For I = 1 To ws.Cells(1, ws.Columns.Count).End(xlToLeft).Column
+            For i = 1 To ws.Cells(1, ws.Columns.Count).End(xlToLeft).Column
                 For j = 1 To 14
-                    If ws.Cells(j, I).Value = columnToSearch Then
-                        Set found = ws.Cells.Columns(I).Find(What:=searchTerm, LookIn:=xlValues, LookAt:=xlWhole)
+                    If ws.Cells(j, i).Value = columnToSearch Then
+                        Set found = ws.Cells.Columns(i).Find(What:=searchTerm, LookIn:=xlValues, LookAt:=xlWhole)
                         If Not found Is Nothing Then
                             Set lastRow = ActiveSheet.Range("A" & ActiveSheet.Rows.Count).End(xlUp).Offset(1)
-                            ws.Cells(j, I).EntireRow.Copy
+                            ws.Cells(j, i).EntireRow.Copy
                             lastRow.PasteSpecial xlPasteValues
-                            lastRow.Resize(1, ws.Cells(j, I).EntireRow.Columns.Count).Font.Bold = True
-                            ws.Cells(found.Row, I).Offset(0, 1).EntireRow.Copy
+                            lastRow.Resize(1, ws.Cells(j, i).EntireRow.Columns.Count).Font.Bold = True
+                            ws.Cells(found.Row, i).Offset(0, 1).EntireRow.Copy
                             lastRow.Offset(1).PasteSpecial xlPasteValues
                             lastRow.Value = ws.Name
                         End If
                         Exit For
                     End If
                 Next j
-            Next I
+            Next i
             
     Next ws
     Set localSelect = lastRow
@@ -68,7 +68,16 @@ Sub НайтиВставить()
     
     
 End Sub
-
+Function ItemExists(col As Collection, item As Variant) As Boolean
+    Dim i As Integer
+    ItemExists = False
+    For i = 1 To col.Count
+        If col(i) = item Then
+            ItemExists = True
+            Exit Function
+        End If
+    Next i
+End Function
 Function ВставитьПоследнюю(functionSelect)
     
     Dim obj As OLEObject
@@ -88,6 +97,10 @@ Function ВставитьПоследнюю(functionSelect)
     
     
     Dim dict As Object
+    Dim dictForNumbers As New Collection
+    dictForNumbers.Add "Расходы"
+    
+    
     Set dict = CreateObject("Scripting.Dictionary")
     
     dict.Add "Имя листа", "КодЛист"
@@ -96,6 +109,7 @@ Function ВставитьПоследнюю(functionSelect)
     dict.Add "Дата ввода", "ДатаКод"
     dict.Add "Страховая сумма", "СтраховаяСумКод"
     dict.Add "Расходы", "РасходыКод"
+    
     
     
     If functionSelect Is Nothing Then
@@ -127,43 +141,41 @@ Function ВставитьПоследнюю(functionSelect)
     
     Set rowRange = Range(startingCell.Offset(0, 1), startingCell.End(xlToRight))
     
-    For Each ws In ActiveWorkbook.Worksheets
-        Set foundRange = ws.UsedRange.Find(What:=searchText, LookIn:=xlValues, LookAt:=xlWhole)
-        If Not foundRange Is Nothing Then
-            Exit For
-        End If
-    Next ws
-    Set secondRange = foundRange.Offset(1)
-    Set forceRange = Range(foundRange.Offset(0, 1), foundRange.End(xlToRight))
+     
+    ' For Each ws In ActiveWorkbook.Worksheets
+     '   Set foundRange = ws.UsedRange.Find(What:=searchText, LookIn:=xlValues, LookAt:=xlWhole)
+      '  If Not foundRange Is Nothing Then
+       '     Exit For
+    '    End If
+   '  Next ws
+   ' Set secondRange = foundRange.Offset(1)
+   ' Set forceRange = Range(foundRange.Offset(0, 1), foundRange.End(xlToRight))
     Index = 0
+    
+  
     For Each cell1 In rowRange
-        For Each cell2 In forceRange
-            If cell2.Value = "Имя листа" Then
+            If cell1.Adress = rowRange.Cells(1).Address Then
                 wdApp.Visible = True
                 wdDoc.Activate
-                wdDoc.Content.Find.Execute findText:=cell2.Offset(1, 0).Value, ReplaceWith:=rowRange.Cells(0).Value, Replace:=2, Wrap:=1
+                wdDoc.Content.Find.Execute findText:=dict("Имя листа"), ReplaceWith:=rowRange.Cells(0).Value, Replace:=2, Wrap:=1
           
             End If
-            If cell1.Value = cell2.Value Then
+            If dict.Exists("cell1.Value") Then
                 wdApp.Visible = True
                 wdDoc.Activate
-
-                
-                
                 If IsNumeric(cell1.Offset(-1, 0).Value) Then
-                    If LCase(cell2.Offset(2, 0).Value) = "да" Then
-                    textNum = БелРуб(cell1.Offset(-1, 0).Value, True)
-                    wdDoc.Content.Find.Execute findText:=cell2.Offset(1, 0).Value, ReplaceWith:=cell1.Offset(-1, 0).Value & " BYN (" & textNum & ")", Replace:=2, Wrap:=1
-                    Else
-                    wdDoc.Content.Find.Execute findText:=cell2.Offset(1, 0).Value, ReplaceWith:=cell1.Offset(-1, 0).Value, Replace:=2, Wrap:=1
-                    End If
+                    If ItemExists(dictForNumbers, cell1.Value) Then
+                        textNum = БелРуб(cell1.Offset(-1, 0).Value, True)
+                        wdDoc.Content.Find.Execute findText:=cell2.Offset(1, 0).Value, ReplaceWith:=cell1.Offset(-1, 0).Value & " BYN (" & textNum & ")", Replace:=2, Wrap:=1
+                        Else
+                        wdDoc.Content.Find.Execute findText:=cell2.Offset(1, 0).Value, ReplaceWith:=cell1.Offset(-1, 0).Value, Replace:=2, Wrap:=1
+                        End If
                 Else
                     wdDoc.Content.Find.Execute findText:=cell2.Offset(1, 0).Value, ReplaceWith:=cell1.Offset(-1, 0).Value, Replace:=2, Wrap:=1
                 End If
                 'Excel.Application.Activate
  
             End If
-        Next cell2
     Next cell1
         'wdApp.Quit
         
@@ -208,12 +220,12 @@ End If
 
 ' Присвоение переменным Рр(1)...Рр(14) значений соответствующих разрядов
 ' преобразуемой суммы:
-For I = 1 To 12                     ' для рублей
-  Рр(I) = Val(Mid(ЦелаяЧасть, I, 1))
-Next I
-For I = 13 To 14                    ' для копеек
-  Рр(I) = Val(Mid(коп, I - 12, 1))
-Next I
+For i = 1 To 12                     ' для рублей
+  Рр(i) = Val(Mid(ЦелаяЧасть, i, 1))
+Next i
+For i = 13 To 14                    ' для копеек
+  Рр(i) = Val(Mid(коп, i - 12, 1))
+Next i
 
 ' Формирование преобразуемой текстовой строки по триадам разрядов от старших к младшим
 
