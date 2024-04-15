@@ -26,22 +26,13 @@ Attribute VB_Name = "Module1"
                     If ws.Cells(j, I).Value = columnToSearch Then
                         Set found = ws.Cells.Columns(I).Find(What:=searchTerm, LookIn:=xlValues, LookAt:=xlWhole)
                         If Not found Is Nothing Then
-                           
                             Set lastRow = ActiveSheet.Range("A" & ActiveSheet.Rows.Count).End(xlUp).Offset(1)
-                            
                             ws.Cells(j, I).EntireRow.Copy
-                            
-                            
-
-                            
                             lastRow.PasteSpecial xlPasteValues
                             lastRow.Resize(1, ws.Cells(j, I).EntireRow.Columns.Count).Font.Bold = True
                             ws.Cells(found.Row, I).Offset(0, 1).EntireRow.Copy
                             lastRow.Offset(1).PasteSpecial xlPasteValues
                             lastRow.Value = ws.Name
-                            
-                            
-
                         End If
                         Exit For
                     End If
@@ -55,6 +46,7 @@ Attribute VB_Name = "Module1"
     choose = MsgBox("Вопрос: Ввести это в документ?", vbYesNo)
     If choose = vbYes Then
         ВставитьПоследнюю lastRow
+        selection.ClearContents
     End If
     
 End Function
@@ -65,10 +57,10 @@ Sub НайтиВставить()
     
 
  
-    columnToSearch = InputBox("Введите название столбца для поиска:")
+    columnToSearch = "Инв.№"
     searchValue = InputBox("Введите значение для поиска:")
  
-    If searchValue = "" Or columnToSearch = "" Then
+    If searchValue = "" Then
     MsgBox "Неправильный ввод"
     Else
     FindAndCopy searchValue, columnToSearch
@@ -94,7 +86,17 @@ Function ВставитьПоследнюю(functionSelect)
     Dim Index As Integer
     Dim textNum As String
     
-
+    
+    Dim dict As Object
+    Set dict = CreateObject("Scripting.Dictionary")
+    
+    dict.Add "Имя листа", "КодЛист"
+    dict.Add "Инв.№", "ИнвНомерКод"
+    dict.Add "Наименование", "НаименКод"
+    dict.Add "Дата ввода", "ДатаКод"
+    dict.Add "Страховая сумма", "СтраховаяСумКод"
+    dict.Add "Расходы", "РасходыКод"
+    
     
     If functionSelect Is Nothing Then
         MsgBox ("Нечего вставлять")
