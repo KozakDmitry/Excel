@@ -105,6 +105,7 @@ Function ВставитьПоследнюю(functionSelect)
     
     dict.Add "Имя листа", "КодЛист"
     dict.Add "Инв.№", "ИнвНомерКод"
+    dict.Add "Код под-ия", "Кодподр"
     dict.Add "Наименование", "НаименКод"
     dict.Add "Дата ввода", "ДатаКод"
     dict.Add "Страховая сумма", "СтраховаяСумКод"
@@ -136,7 +137,6 @@ Function ВставитьПоследнюю(functionSelect)
     
     ''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
-    searchText = "Значения для подстановки"
     
     
     Set rowRange = Range(startingCell.Offset(0, 1), startingCell.End(xlToRight))
@@ -154,24 +154,24 @@ Function ВставитьПоследнюю(functionSelect)
     
   
     For Each cell1 In rowRange
-            If cell1.Adress = rowRange.Cells(1).Address Then
+            If cell1.Address = rowRange.Cells(1).Address Then
                 wdApp.Visible = True
                 wdDoc.Activate
                 wdDoc.Content.Find.Execute findText:=dict("Имя листа"), ReplaceWith:=rowRange.Cells(0).Value, Replace:=2, Wrap:=1
           
             End If
-            If dict.Exists("cell1.Value") Then
+            If Not IsEmpty(cell1.Value) And dict.Exists(cell1.Value) Then
                 wdApp.Visible = True
                 wdDoc.Activate
                 If IsNumeric(cell1.Offset(-1, 0).Value) Then
                     If ItemExists(dictForNumbers, cell1.Value) Then
                         textNum = БелРуб(cell1.Offset(-1, 0).Value, True)
-                        wdDoc.Content.Find.Execute findText:=cell2.Offset(1, 0).Value, ReplaceWith:=cell1.Offset(-1, 0).Value & " BYN (" & textNum & ")", Replace:=2, Wrap:=1
+                        wdDoc.Content.Find.Execute findText:=dict(cell1.Value), ReplaceWith:=cell1.Offset(-1, 0).Value & " BYN (" & textNum & ")", Replace:=2, Wrap:=1
                         Else
-                        wdDoc.Content.Find.Execute findText:=cell2.Offset(1, 0).Value, ReplaceWith:=cell1.Offset(-1, 0).Value, Replace:=2, Wrap:=1
+                        wdDoc.Content.Find.Execute findText:=dict(cell1.Value), ReplaceWith:=cell1.Offset(-1, 0).Value, Replace:=2, Wrap:=1
                         End If
                 Else
-                    wdDoc.Content.Find.Execute findText:=cell2.Offset(1, 0).Value, ReplaceWith:=cell1.Offset(-1, 0).Value, Replace:=2, Wrap:=1
+                    wdDoc.Content.Find.Execute findText:=dict(cell1.Value), ReplaceWith:=cell1.Offset(-1, 0).Value, Replace:=2, Wrap:=1
                 End If
                 'Excel.Application.Activate
  
