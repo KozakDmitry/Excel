@@ -33,7 +33,7 @@ Attribute VB_Name = "Module1"
                             lastRow.PasteSpecial xlPasteValues
                             lastRow.Resize(1, ws.Cells(j, i).EntireRow.Columns.Count).Font.Bold = True
                             ws.Cells(found.Row, i).Offset(0, 1).EntireRow.Copy
-                            lastRow.Offset(1).PasteSpecial xlPasteValues
+                            lastRow.Offset(1).PasteSpecial Paste:=xlPasteAll
                             lastRow.Value = ws.Name
                         End If
                         Exit For
@@ -164,18 +164,18 @@ Function ВставитьПоследнюю(functionSelect)
             If Not IsEmpty(cell1.Value) And dict.Exists(cell1.Value) Then
                 wdApp.Visible = True
                 wdDoc.Activate
-                If IsNumeric(cell1.Offset(-1, 0).Value) Then
+                If IsNumeric(cell1.Offset(1, 0).Value) Then
                     If ItemExists(dictForNumbers, cell1.Value) Then
-                        textNum = БелРуб(cell1.Offset(-1, 0).Value, True)
-                        wdDoc.Content.Find.Execute findText:=dict(cell1.Value), ReplaceWith:=cell1.Offset(-1, 0).Value & " BYN (" & textNum & ")", Replace:=2, Wrap:=1
+                        textNum = БелРуб(cell1.Offset(1, 0).Value, True)
+                        wdDoc.Content.Find.Execute findText:=dict(cell1.Value), ReplaceWith:=cell1.Offset(1, 0).Value & " BYN (" & textNum & ")", Replace:=2, Wrap:=1
                         Else
-                        wdDoc.Content.Find.Execute findText:=dict(cell1.Value), ReplaceWith:=cell1.Offset(-1, 0).Value, Replace:=2, Wrap:=1
+                        wdDoc.Content.Find.Execute findText:=dict(cell1.Value), ReplaceWith:=cell1.Offset(1, 0).Value, Replace:=2, Wrap:=1
                         End If
                 Else
-                If IsDate(cell1.Offset(-1, 0).Value) Then
-                    wdDoc.Content.Find.Execute findText:=dict(cell1.Value), ReplaceWith:=Format(cell1.Offset(-1, 0).Value, "dd.mm.yyyy"), Replace:=2, Wrap:=1
+                If IsDate(cell1.Offset(1, 0).Value) Then
+                    wdDoc.Content.Find.Execute findText:=dict(cell1.Value), ReplaceWith:=Format(cell1.Offset(1, 0).Value, "dd.mm.yyyy"), Replace:=2, Wrap:=1
                 Else
-                    wdDoc.Content.Find.Execute findText:=dict(cell1.Value), ReplaceWith:=cell1.Offset(-1, 0).Value, Replace:=2, Wrap:=1
+                    wdDoc.Content.Find.Execute findText:=dict(cell1.Value), ReplaceWith:=cell1.Offset(1, 0).Value, Replace:=2, Wrap:=1
                 End If
                 End If
                 'Excel.Application.Activate
