@@ -16,8 +16,11 @@ Attribute VB_Name = "Module1"
     Dim i As Long
     Dim choose As String
     Dim lastRow As Range
+    Dim NumberDocToSearch As String
     
-
+    
+    'используется для определения поиска имени договора
+    NumberDocToSearch = "№"
     Set copyTo = selection
     
     For Each ws In ActiveWorkbook.Worksheets
@@ -32,7 +35,9 @@ Attribute VB_Name = "Module1"
                             lastRow.Resize(1, ws.Cells(j, i).EntireRow.Columns.Count).Font.Bold = True
                             ws.Cells(found.Row, i).Offset(0, 1).EntireRow.Copy
                             lastRow.Offset(1).PasteSpecial xlPasteValues
-                            lastRow.Value = ws.Name
+                            Set searchNumberRange = ws.UsedRange.Rows("2:2")
+                            Set foundCell = searchNumberRange.Find(What:=NumberDocToSearch, LookIn:=xlValues, LookAt:=xlPart)
+                            lastRow.Value = foundCell.Value
                         End If
                         Exit For
                     End If
@@ -41,12 +46,11 @@ Attribute VB_Name = "Module1"
             
     Next ws
     Set localSelect = lastRow
-    Debug.Print (localSelect.Address)
+    'Debug.Print (localSelect.Address)
     
     choose = MsgBox("Вопрос: Ввести это в документ?", vbYesNo)
     If choose = vbYes Then
         ВставитьПоследнюю lastRow
-        selection.ClearContents
     End If
     
 End Function
@@ -99,7 +103,7 @@ Function ВставитьПоследнюю(functionSelect)
     Dim dict As Object
     Dim dictForNumbers As New Collection
     dictForNumbers.Add "Расходы"
-    
+    dictForNumbers.Add "Страховая сумма"
     
     Set dict = CreateObject("Scripting.Dictionary")
     
@@ -107,7 +111,7 @@ Function ВставитьПоследнюю(functionSelect)
     dict.Add "Инв.№", "ИнвНомерКод"
     dict.Add "Код под-ия", "Кодподр"
     dict.Add "Наименование", "НаименКод"
-    dict.Add "Дата ввода", "ДатаКод"
+    dict.Add "Дата ввода (год выпуска)", "ДатаКод"
     dict.Add "Страховая сумма", "СтраховаяСумКод"
     dict.Add "Расходы", "РасходыКод"
     
@@ -178,7 +182,7 @@ Function ВставитьПоследнюю(functionSelect)
             End If
     Next cell1
         'wdApp.Quit
-        
+        wdDuplicate.Delete
         
 End Function
 
