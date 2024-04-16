@@ -33,7 +33,7 @@ Attribute VB_Name = "Module1"
                             lastRow.PasteSpecial xlPasteValues
                             lastRow.Resize(1, ws.Cells(j, i).EntireRow.Columns.Count).Font.Bold = True
                             ws.Cells(found.Row, i).Offset(0, 1).EntireRow.Copy
-                            lastRow.Offset(1).PasteSpecial Paste:=xlPasteAllUsingSourceTheme
+                            lastRow.Offset(1).PasteSpecial xlPasteValues
                             lastRow.Value = ws.Name
                         End If
                         Exit For
@@ -52,7 +52,7 @@ Attribute VB_Name = "Module1"
     
 End Function
 
-Sub НайтиВставить()
+Sub НайтиВставитьИсправленная()
     Dim searchValue As Variant
     Dim columnToSearch As Variant
     
@@ -183,7 +183,7 @@ Function ВставитьПоследнюю(functionSelect)
             End If
     Next cell1
         'wdApp.Quit
-        wdDuplicate.Delete
+        'wdDuplicate.Delete
         
 End Function
 
