@@ -19,8 +19,7 @@ Attribute VB_Name = "Module1"
     Dim NumberDocToSearch As String
     
     
-    'используется для определения поиска имени договора
-    NumberDocToSearch = "№"
+
     Set copyTo = selection
     
     For Each ws In ActiveWorkbook.Worksheets
@@ -35,9 +34,7 @@ Attribute VB_Name = "Module1"
                             lastRow.Resize(1, ws.Cells(j, i).EntireRow.Columns.Count).Font.Bold = True
                             ws.Cells(found.Row, i).Offset(0, 1).EntireRow.Copy
                             lastRow.Offset(1).PasteSpecial xlPasteValues
-                            Set searchNumberRange = ws.UsedRange.Rows("2:2")
-                            Set foundCell = searchNumberRange.Find(What:=NumberDocToSearch, LookIn:=xlValues, LookAt:=xlPart)
-                            lastRow.Value = foundCell.Value
+                            lastRow.Value = ws.Name
                         End If
                         Exit For
                     End If
