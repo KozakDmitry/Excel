@@ -33,7 +33,7 @@ Attribute VB_Name = "Module1"
                             lastRow.PasteSpecial xlPasteValues
                             lastRow.Resize(1, ws.Cells(j, i).EntireRow.Columns.Count).Font.Bold = True
                             ws.Cells(found.Row, i).Offset(0, 1).EntireRow.Copy
-                            lastRow.Offset(1).PasteSpecial xlPasteValues
+                            lastRow.Offset(1).PasteSpecial Paste:=xlPasteAllUsingSourceTheme
                             lastRow.Value = ws.Name
                         End If
                         Exit For
@@ -106,7 +106,7 @@ Function ВставитьПоследнюю(functionSelect)
     
     dict.Add "Имя листа", "КодЛист"
     dict.Add "Инв.№", "ИнвНомерКод"
-    dict.Add "Код под-ия", "Кодподр"
+    dict.Add "Заводской номер", "Кодподр"
     dict.Add "Наименование", "НаименКод"
     dict.Add "Дата ввода (год выпуска)", "ДатаКод"
     dict.Add "Страховая сумма", "СтраховаяСумКод"
@@ -172,7 +172,11 @@ Function ВставитьПоследнюю(functionSelect)
                         wdDoc.Content.Find.Execute findText:=dict(cell1.Value), ReplaceWith:=cell1.Offset(-1, 0).Value, Replace:=2, Wrap:=1
                         End If
                 Else
+                If IsDate(cell1.Offset(-1, 0).Value) Then
+                    wdDoc.Content.Find.Execute findText:=dict(cell1.Value), ReplaceWith:=Format(cell1.Offset(-1, 0).Value, "dd.mm.yyyy"), Replace:=2, Wrap:=1
+                Else
                     wdDoc.Content.Find.Execute findText:=dict(cell1.Value), ReplaceWith:=cell1.Offset(-1, 0).Value, Replace:=2, Wrap:=1
+                End If
                 End If
                 'Excel.Application.Activate
  
